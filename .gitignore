@@ -1,0 +1,15 @@
+#/bazel-bin
+#/bazel-ci_build-cache
+#/bazel-genfiles
+#/bazel-out
+#/bazel-im2txt
+#/bazel-testlogs
+#/bazel-tf
+
+im2txt/data/mscoco/
+im2txt/model
+im2txt/results/
+*.pyc
+*.json
+*.ckpt
+*.pkl
