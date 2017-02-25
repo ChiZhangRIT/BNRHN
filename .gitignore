@@ -13,3 +13,4 @@ im2txt/results/
 *.json
 *.ckpt
 *.pkl
+*.ipynb_checkpoints

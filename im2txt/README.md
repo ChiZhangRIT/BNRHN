@@ -1,48 +1,67 @@
-## Python command to run the code (if you do not have bazel installed)
-# Prepare the training data and download the inception v3 model, see im2txt/README.
+# Usage
 
-# Run the training script.
-# for regular LSTM
+## Prepare the training data and download the inception v3 model, see im2txt/README.
+
+## Run the training script.
+### for regular LSTM
+```
 python train.py --input_file_pattern=data/mscoco/train-?????-of-00256 --inception_checkpoint_file=data/inception_v3/inception_v3.ckpt --train_dir=model/train --train_inception=false  --number_of_steps=1000000
-# for RHN
+```
+### for RHN
+```
 python train_rhn.py --input_file_pattern=data/mscoco/train-?????-of-00256 --inception_checkpoint_file=data/inception_v3/inception_v3.ckpt --train_dir=model/train_rhn --train_inception=false  --number_of_steps=1000000
-# for BNRHN
+```
+### for BNRHN
+```
 python train_bnrhn.py --input_file_pattern=data/mscoco/train-?????-of-00256 --inception_checkpoint_file=data/inception_v3/inception_v3.ckpt --train_dir=model/train_bnrhn --train_inception=false  --number_of_steps=400000
+```
 
-
-# Evaluation should be run concurrently with training so that summaries show up in TensorBoard.
+## Evaluation should be run concurrently with training so that summaries show up in TensorBoard.
+```
 export CUDA_VISIBLE_DEVICES=""
-# for regular LSTM
+```
+### for regular LSTM
+```
 python evaluate.py --input_file_pattern=data/mscoco/val-?????-of-00004 --checkpoint_dir=model/train --eval_dir=model/eval
-# for RHN:
+```
+### for RHN:
+```
 python evaluate_rhn.py --input_file_pattern=data/mscoco/val-?????-of-00004 --checkpoint_dir=model/train_rhn --eval_dir=model/eval_rhn
-# for BNRHN
+```
+### for BNRHN
+```
 python evaluate_bnrhn.py --input_file_pattern=data/mscoco/val-?????-of-00004 --checkpoint_dir=model/train_bnrhn --eval_dir=model/eval_bnrhn
+```
 
-
-# Run a TensorBoard server in a separate process for real-time monitoring of training progress and evaluation metrics.
+## Run a TensorBoard server in a separate process for real-time monitoring of training progress and evaluation metrics.
+```
 tensorboard --logdir=model
-# default: http://129.21.57.35:6006
+```
+default: http://129.21.57.35:6006
 
-# Fine tune the inception v3 model.
+## Fine tune the inception v3 model.
+```
 python train_bnrhn.py --input_file_pattern=data/mscoco/train-?????-of-00256 --train_dir=model/train_bnrhn --train_inception=true  --number_of_steps=3000000
+```
 
-# Generating captions
+## Generating captions
+```
 export CUDA_VISIBLE_DEVICES=""
 python run_inference.py --checkpoint_path=model/train --vocab_file=data/mscoco/word_counts.txt --input_files=/cis/phd/cxz2081/data/mscoco/captioning/val2014/COCO_val2014_000000224477.jpg
+```
 
-# =======================================================================
-# Calculate scores (BLEU, METEOR, etc.)
-# run cocoEvalCap.ipynb
-# [Note]: This jupyter notebook actually consists of two parts:
-#         1) generate_captions.py
-#         2) calc_metrics.py
-# Instead of using jupyter notebook, we can run these two parts in python:
+======================================================================
+## Calculate scores (BLEU, METEOR, etc.)
+run cocoEvalCap.ipynb
+[Note]: This jupyter notebook actually consists of two parts:
+         1) generate_captions.py
+         2) calc_metrics.py
+ Instead of using jupyter notebook, we can run these two parts in python:
 
-# 1) evaluate mscoco test dataset (generate captions for mscoco test dataset)
-# first change model in inference_wrappr.py,
-# then modify inputs in generate_captions.py
-# and run:
+1) evaluate mscoco test dataset (generate captions for mscoco test dataset)
+first change model in inference_wrappr.py,
+then modify inputs in generate_captions.py
+and run:
 python generate_captions.py
 python generate_captions_for_selftest_images.py  # for "test" with known GT
 
