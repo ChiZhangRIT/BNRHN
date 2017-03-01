@@ -6,11 +6,11 @@
 #/bazel-testlogs
 #/bazel-tf
 
-im2txt/data/mscoco/
-im2txt/model
-im2txt/results/
+data/mscoco/
+model
+results/
 *.pyc
 *.json
 *.ckpt
 *.pkl
-im2txt/.ipynb_checkpoints/
+.ipynb_checkpoints
