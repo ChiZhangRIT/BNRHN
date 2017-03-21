@@ -1,48 +1,93 @@
-Microsoft COCO Caption Evaluation
+Batch Normalized Recurrent Neural Networks
 ===================
 
-Evaluation codes for MS COCO caption generation.
+This experiment is implemented based on the image-to-text model described in the paper:
 
-## Requirements ##
-- java 1.8.0
-- python 2.7
+"Show and Tell: Lessons learned from the 2015 MSCOCO Image Captioning Challenge."
 
-## Files ##
-./
-- cocoEvalCapDemo.py (demo script)
+Oriol Vinyals, Alexander Toshev, Samy Bengio, Dumitru Erhan.
 
-./annotation
-- captions_val2014.json (MS COCO 2014 caption validation set)
-- Visit MS COCO [download](http://mscoco.org/dataset/#download) page for more details.
+*IEEE transactions on pattern analysis and machine intelligence (2016).*
 
-./results
-- captions_val2014_fakecap_results.json (an example of fake results for running demo)
-- Visit MS COCO [format](http://mscoco.org/dataset/#format) page for more details.
+Full text available at: http://arxiv.org/abs/1609.06647
 
-./pycocoevalcap: The folder where all evaluation codes are stored.
-- evals.py: The file includes COCOEavlCap class that can be used to evaluate results on COCO.
-- tokenizer: Python wrapper of Stanford CoreNLP PTBTokenizer
-- bleu: Bleu evalutation codes
-- meteor: Meteor evaluation codes
-- rouge: Rouge-L evaluation codes
-- cider: CIDEr evaluation codes
+Show-and-tell model source code: https://github.com/tensorflow/models/tree/master/im2txt
 
-## References ##
+## Usage
 
-- [Microsoft COCO Captions: Data Collection and Evaluation Server](http://arxiv.org/abs/1504.00325)
-- PTBTokenizer: We use the [Stanford Tokenizer](http://nlp.stanford.edu/software/tokenizer.shtml) which is included in [Stanford CoreNLP 3.4.1](http://nlp.stanford.edu/software/corenlp.shtml).
-- BLEU: [BLEU: a Method for Automatic Evaluation of Machine Translation](http://www.aclweb.org/anthology/P02-1040.pdf)
-- Meteor: [Project page](http://www.cs.cmu.edu/~alavie/METEOR/) with related publications. We use the latest version (1.5) of the [Code](https://github.com/mjdenkowski/meteor). Changes have been made to the source code to properly aggreate the statistics for the entire corpus.
-- Rouge-L: [ROUGE: A Package for Automatic Evaluation of Summaries](http://anthology.aclweb.org/W/W04/W04-1013.pdf)
-- CIDEr: [CIDEr: Consensus-based Image Description Evaluation] (http://arxiv.org/pdf/1411.5726.pdf)
+Prepare the training data and download the inception v3 model, see *im2txt/README*.
 
-## Developers ##
-- Xinlei Chen (CMU)
-- Hao Fang (University of Washington)
-- Tsung-Yi Lin (Cornell)
-- Ramakrishna Vedantam (Virgina Tech)
+### Run the training script.
+for regular LSTM
+```
+python train.py --input_file_pattern=data/mscoco/train-?????-of-00256 --inception_checkpoint_file=data/inception_v3/inception_v3.ckpt --train_dir=model/train --train_inception=false  --number_of_steps=1000000
+```
+for RHN
+```
+python train_rhn.py --input_file_pattern=data/mscoco/train-?????-of-00256 --inception_checkpoint_file=data/inception_v3/inception_v3.ckpt --train_dir=model/train_rhn --train_inception=false  --number_of_steps=1000000
+```
+for BNRHN
+```
+python train_bnrhn.py --input_file_pattern=data/mscoco/train-?????-of-00256 --inception_checkpoint_file=data/inception_v3/inception_v3.ckpt --train_dir=model/train_bnrhn --train_inception=false  --number_of_steps=400000
+```
 
-## Acknowledgement ##
-- David Chiang (University of Norte Dame)
-- Michael Denkowski (CMU)
-- Alexander Rush (Harvard University)
+### Evaluation
+
+Evaluation should be run concurrently with training so that summaries show up in TensorBoard.
+```
+export CUDA_VISIBLE_DEVICES=""
+```
+for regular LSTM
+```
+python evaluate.py --input_file_pattern=data/mscoco/val-?????-of-00004 --checkpoint_dir=model/train --eval_dir=model/eval
+```
+for RHN:
+```
+python evaluate_rhn.py --input_file_pattern=data/mscoco/val-?????-of-00004 --checkpoint_dir=model/train_rhn --eval_dir=model/eval_rhn
+```
+for BNRHN
+```
+python evaluate_bnrhn.py --input_file_pattern=data/mscoco/val-?????-of-00004 --checkpoint_dir=model/train_bnrhn --eval_dir=model/eval_bnrhn
+```
+
+Run a TensorBoard server in a separate process for real-time monitoring of training progress and evaluation metrics.
+```
+tensorboard --logdir=model
+```
+default: http://129.21.57.35:6006
+
+### Fine tune the inception v3 model.
+```
+python train_bnrhn.py --input_file_pattern=data/mscoco/train-?????-of-00256 --train_dir=model/train_bnrhn --train_inception=true  --number_of_steps=3000000
+```
+
+### Generating captions
+```
+export CUDA_VISIBLE_DEVICES=""
+python run_inference.py --checkpoint_path=model/train --vocab_file=data/mscoco/word_counts.txt --input_files=/cis/phd/cxz2081/data/mscoco/captioning/val2014/COCO_val2014_000000224477.jpg
+```
+
+### Calculate scores (BLEU, METEOR, etc.)
+run *cocoEvalCap.ipynb*
+
+[Note]: This jupyter notebook actually consists of two parts:
+
+1) *generate_captions.py*
+
+2) *calc_metrics.py*
+
+Instead of using jupyter notebook, we can run these two parts in python:
+
+1) evaluate mscoco test dataset (generate captions for mscoco test dataset)
+
+first change model in *inference_wrappr.py*, then modify inputs in *generate_captions.py*, and run:
+```
+python generate_captions.py
+python generate_captions_for_selftest_images.py  # for "test" with known GT
+```
+
+2) extract image ids from TFRecords, generate captions, and calculate metrics
+```
+python calc_metrics.py  # image ids will be generated from TFRecords or loaded from file
+```
+for RHN (batch): modify line 88-93, line 179 in *evaluate_rhn.py*
