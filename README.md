@@ -64,7 +64,7 @@ python train_bnrhn.py --input_file_pattern=data/mscoco/train-?????-of-00256 --tr
 ### Generating captions
 ```
 export CUDA_VISIBLE_DEVICES=""
-python run_inference.py --checkpoint_path=model/train --vocab_file=data/mscoco/word_counts.txt --input_files=/cis/phd/cxz2081/data/mscoco/captioning/val2014/COCO_val2014_000000224477.jpg
+python run_inference.py --checkpoint_path=model/train_bnrhn --vocab_file=data/mscoco/word_counts.txt --input_files=/cis/phd/cxz2081/data/mscoco/captioning/val2014/COCO_val2014_000000224477.jpg
 ```
 
 ### Calculate scores (BLEU, METEOR, etc.)

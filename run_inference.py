@@ -20,12 +20,12 @@ from __future__ import print_function
 
 import math
 import os
-
+import pickle
 
 import tensorflow as tf
 
 import configuration
-import inference_wrapper
+import inference_wrapper_bnrhn
 from inference_utils import caption_generator
 from inference_utils import vocabulary
 
@@ -44,20 +44,24 @@ def main(_):
   # Build the inference graph.
   g = tf.Graph()
   with g.as_default():
-    model = inference_wrapper.InferenceWrapper()
-    restore_fn = model.build_graph_from_config(configuration.ModelConfig(),
+    model = inference_wrapper_bnrhn.InferenceWrapper()
+    restore_fn = model.build_graph_from_config(configuration.BNRHNModelConfig(),
                                                FLAGS.checkpoint_path)
   g.finalize()
 
-  # Create the vocabulary.
-  vocab = vocabulary.Vocabulary(FLAGS.vocab_file)
+  # # Create the vocabulary.
+  # vocab = vocabulary.Vocabulary(FLAGS.vocab_file)
+  # Load vocabulary.
+  with open('data/mscoco/vocab_MSCOCO.pkl','r') as f:
+      vocab = pickle.load(f)
 
   filenames = []
   for file_pattern in FLAGS.input_files.split(","):
-    filenames.extend(tf.gfile.Glob(file_pattern))
+      filenames.extend(tf.gfile.Glob(file_pattern))
   tf.logging.info("Running caption generation on %d files matching %s",
                   len(filenames), FLAGS.input_files)
 
+  # generate captions
   with tf.Session(graph=g) as sess:
     # Load the model from checkpoint.
     restore_fn(sess)
@@ -69,14 +73,14 @@ def main(_):
 
     for filename in filenames:
       with tf.gfile.GFile(filename, "r") as f:
-        image = f.read()
+          image = f.read()
       captions = generator.beam_search(sess, image)
       print("Captions for image %s:" % os.path.basename(filename))
       for i, caption in enumerate(captions):
-        # Ignore begin and end words.
-        sentence = [vocab.id_to_word(w) for w in caption.sentence[1:-1]]
-        sentence = " ".join(sentence)
-        print("  %d) %s (p=%f)" % (i, sentence, math.exp(caption.logprob)))
+          # Ignore begin and end words.
+          sentence = [vocab.id_to_word(w) for w in caption.sentence[1:-1]]
+          sentence = " ".join(sentence)
+          print("  %d) %s (p=%f)" % (i, sentence, math.exp(caption.logprob)))
 
 
 if __name__ == "__main__":
