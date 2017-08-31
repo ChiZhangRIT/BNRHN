@@ -66,6 +66,11 @@ python train_bnrhn.py --input_file_pattern=data/mscoco/train-?????-of-00256 --tr
 export CUDA_VISIBLE_DEVICES=""
 python run_inference.py --checkpoint_path=model/train_bnrhn --vocab_file=data/mscoco/word_counts.txt --input_files=/cis/phd/cxz2081/data/mscoco/captioning/val2014/COCO_val2014_000000224477.jpg
 ```
+Note: Use run_inference_KA.py to generate captions for image names in input_files. For example,
+```
+python run_inference_KA.py --checkpoint_path=model/train_bnrhn --vocab_file=data/mscoco/word_counts.txt --input_files=/cis/phd/cxz2081/data/KodakAlaris_ConsumerActivity/image_list.txt --output_file=/cis/phd/cxz2081/data/KodakAlaris_ConsumerActivity/image_captions.txt
+```
+Note: run_inference_KA.py is to generate captions for Kodak Alaris internal image dataset.
 
 ### Calculate scores (BLEU, METEOR, etc.)
 run *cocoEvalCap.ipynb*
