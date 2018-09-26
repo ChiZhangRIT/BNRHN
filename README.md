@@ -96,3 +96,18 @@ python generate_captions_for_selftest_images.py  # for "test" with known GT
 python calc_metrics.py  # image ids will be generated from TFRecords or loaded from file
 ```
 for RHN (batch): modify line 88-93, line 179 in *evaluate_rhn.py*
+
+## Citation
+
+```
+@inproceedings{zhang2017batch,
+  title={Batch-normalized recurrent highway networks},
+  author={Zhang, Chi and Nguyen, Thang and Sah, Shagan and Ptucha, Raymond and Loui, Alexander and Salvaggio, Carl},
+  booktitle={Image Processing (ICIP), 2017 IEEE International Conference on},
+  pages={640--644},
+  year={2017},
+  organization={IEEE}
+}
+```
+
+Click [here](https://ieeexplore.ieee.org/abstract/document/8296359) to access this paper.
